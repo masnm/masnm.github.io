@@ -61,10 +61,18 @@ class vec2 {
 	}
 }
 
+class vec3 {
+	constructor ( x, y, z ) {
+		this.x = x
+		this.y = y
+		this.z = z
+	}
+}
+
 class cell {
 	constructor ( pos ) {
 		this.pos = new vec2 ( pos.x, pos.y )
-		this.wall = new Boolean ( false )
+		this.block = new Boolean ( false )
 		this.arrow = direction.none
 		this.start_pos = new Boolean ( false )
 		this.end_pos = new Boolean ( false )
@@ -80,7 +88,7 @@ var cell_width, cell_height
 var canvas, context
 var grid
 var current_start_pos, current_end_pos
-var setting_start_pos, setting_end_pos
+var setting_start_pos, setting_end_pos, setting_block
 
 function draw_line ( pos, arrow ) {
 	my_min = Math.min ( cell_width, cell_height )
@@ -120,6 +128,10 @@ function draw_grid () {
 				context.fillStyle = "#FFFF00"
 				context.fillRect ( grid[row][col].pos.x + 1, grid[row][col].pos.y + 1,
 					cell_width, cell_height )
+			} else if ( grid[row][col].block == true ) {
+				context.fillStyle = "#0000FF"
+				context.fillRect ( grid[row][col].pos.x + 1, grid[row][col].pos.y + 1,
+					cell_width, cell_height )
 			} else {
 				context.rect ( grid[row][col].pos.x + 1, grid[row][col].pos.y + 1,
 					cell_width, cell_height )
@@ -152,6 +164,8 @@ function mouse_clicked ( event ) {
 		current_end_pos = new vec2 ( sel_row, sel_col )
 		grid[sel_row][sel_col].end_pos = true
 		setting_end_pos = false
+	} else if ( setting_block == true ) {
+		grid[sel_row][sel_col].block ^= true
 	}
 	draw_grid ()
 }
@@ -223,6 +237,7 @@ function disable_everything () {
 	document.getElementById ( "cnm" ).disabled = true
 	document.getElementById ( "stps" ).disabled = true
 	document.getElementById ( "enps" ).disabled = true
+	document.getElementById ( "blbtn" ).disabled = true
 }
 
 function enable_everything () {
@@ -233,61 +248,59 @@ function enable_everything () {
 	document.getElementById ( "cnm" ).disabled = false
 	document.getElementById ( "stps" ).disabled = false
 	document.getElementById ( "enps" ).disabled = false
+	document.getElementById ( "blbtn" ).disabled = false
 }
 
-function generateAnimation () {
+function inside ( next ) {
+	if ( next.x >= 0 && next.x < current_height && next.y >= 0 && next.y < current_width ) {
+		return true
+	} else {
+		return false
+	}
+}
+
+function can_go ( next ) {
+	if ( next.x >= 0 && next.x < current_height && next.y >= 0 && next.y < current_width ) {
+		return (grid[next.x][next.y].visited == Boolean(true)
+			|| grid[next.x][next.y].block == Boolean(true) )? false : true
+	}
+	return false
+}
+
+function set_arrow ( next, dir ) {
+	if ( dir.x == -1 ) {
+		if ( dir.y == -1 ) {
+			grid[next.x][next.y].arrow = direction.right_down
+		} else if ( dir.y == 0 ) {
+			grid[next.x][next.y].arrow = direction.down
+		} else if ( dir.y == 1 ) {
+			grid[next.x][next.y].arrow = direction.down_left
+		}
+	} else if ( dir.x == 0 ) {
+		if ( dir.y == -1 ) {
+			grid[next.x][next.y].arrow = direction.right
+		} else if ( dir.y == 0 ) {
+			grid[next.x][next.y].arrow = direction.none
+		} else if ( dir.y == 1 ) {
+			grid[next.x][next.y].arrow = direction.left
+		}
+	} else if ( dir.x == 1 ) {
+		if ( dir.y == -1 ) {
+			grid[next.x][next.y].arrow = direction.up_right
+		} else if ( dir.y == 0 ) {
+			grid[next.x][next.y].arrow = direction.up
+		} else if ( dir.y == 1 ) {
+			grid[next.x][next.y].arrow = direction.left_up
+		}
+	}
+}
+
+function generateBFSAnimation () {
 	disable_everything ()
-	let old_time
 	let q = new queue ()
 	q.push ( new vec2 ( current_start_pos.x, current_start_pos.y ) )
 	grid[current_start_pos.x][current_start_pos.y].visited = true
-	function inside ( next ) {
-		if ( next.x >= 0 && next.x < current_height && next.y >= 0 && next.y < current_width ) {
-			return true
-		} else {
-			return false
-		}
-	}
-	function can_go ( next ) {
-		if ( next.x >= 0 && next.x < current_height && next.y >= 0 && next.y < current_width ) {
-			return grid[next.x][next.y].visited === true ? false : true
-		}
-		return false
-	}
-	function set_arrow ( next, dir ) {
-		if ( dir.x == -1 ) {
-			if ( dir.y == -1 ) {
-				grid[next.x][next.y].arrow = direction.right_down
-			} else if ( dir.y == 0 ) {
-				grid[next.x][next.y].arrow = direction.down
-			} else if ( dir.y == 1 ) {
-				grid[next.x][next.y].arrow = direction.down_left
-			}
-		} else if ( dir.x == 0 ) {
-			if ( dir.y == -1 ) {
-				grid[next.x][next.y].arrow = direction.right
-			} else if ( dir.y == 0 ) {
-				grid[next.x][next.y].arrow = direction.none
-			} else if ( dir.y == 1 ) {
-				grid[next.x][next.y].arrow = direction.left
-			}
-		} else if ( dir.x == 1 ) {
-			if ( dir.y == -1 ) {
-				grid[next.x][next.y].arrow = direction.up_right
-			} else if ( dir.y == 0 ) {
-				grid[next.x][next.y].arrow = direction.up
-			} else if ( dir.y == 1 ) {
-				grid[next.x][next.y].arrow = direction.left_up
-			}
-		}
-	}
 	function bfs_step ( timestamp ) {
-		if ( old_time == undefined ) {
-			old_time = timestamp
-		}
-		const elapsed_time = timestamp - old_time
-		old_time = timestamp
-		// console.log ( elapsed_time )
 		cp = q.pop()
 		if ( cp.x == current_end_pos.x && cp.y == current_end_pos.y ) {
 			while ( q.size > 0 ) {
@@ -316,9 +329,52 @@ function generateAnimation () {
 	}
 	return bfs_step
 }
-
-function start_bfs_simulation () {
-	window.requestAnimationFrame ( generateAnimation () )
+function generateDijkstraAnimation () {
+	disable_everything ()
+	let pq = new PriorityQueue({
+		comparator: function(a, b) { return a.z - b.z; }
+	})
+	pq.queue ( new vec3 (
+		new vec2 ( current_start_pos.x, current_start_pos.y ),
+		new vec2 ( 0, 0 ), 0
+	))
+	function dijkstra_step ( timestamp ) {
+		current = pq.dequeue ()
+		cp = current.x
+		if ( grid[cp.x][cp.y].visited == Boolean(true) ) {
+			window.requestAnimationFrame ( dijkstra_step )
+			return
+		}
+		grid[cp.x][cp.y].visited = true
+		set_arrow ( cp, current.y )
+		console.log ( cp )
+		if ( cp.x == current_end_pos.x && cp.y == current_end_pos.y ) {
+			pq.clear()
+			enable_everything ()
+			return
+		}
+		for ( i = -1 ; i < 2 ; ++i ) {
+			for ( j = -1 ; j < 2 ; ++j ) {
+				if ( i == 0 && j == 0 ) continue
+				next = new vec2(cp.x+i, cp.y+j)
+				if ( inside ( next )===true && can_go ( next ) === true ) {
+					pq.queue ( new vec3 (
+						new vec2 ( next.x, next.y ),
+						new vec2 ( i, j ), current.z + 1 )
+					)
+				}
+			}
+		}
+		if ( pq.length > 0 ) {
+			draw_grid ()
+			window.requestAnimationFrame ( dijkstra_step )
+		}
+		if ( pq.length < 1 ) {
+			draw_grid ()
+			enable_everything ()
+		}
+	}
+	return dijkstra_step
 }
 
 function start_simulation () {
@@ -332,9 +388,10 @@ function start_simulation () {
 		var algo = document.getElementById ( "algo" ).value
 		switch ( algo ) {
 			case "bfs":
-				start_bfs_simulation ()
+				window.requestAnimationFrame ( generateBFSAnimation () )
 				break;
 			case "dijkstra":
+				window.requestAnimationFrame ( generateDijkstraAnimation () )
 				console.log ( algo )
 				break;
 		}
@@ -344,11 +401,19 @@ function start_simulation () {
 function start_pos_btn () {
 	setting_start_pos = true
 	setting_end_pos = false
+	setting_block = false
 }
 
 function end_pos_btn () {
 	setting_start_pos = false
 	setting_end_pos = true
+	setting_block = false
+}
+
+function block_btn () {
+	setting_start_pos = false
+	setting_end_pos = false
+	setting_block = true
 }
 
 function resize_window ( event ) {

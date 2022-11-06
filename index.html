@@ -3,9 +3,10 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>Let's Draw</title>
+	<title>Visual Path Finders</title>
 	<link rel="stylesheet" type="text/css" href="index.css" />
 	<script src="index.js"></script>
+	<script src="priority-queue.js"></script>
 </head>
 
 <body>
@@ -22,6 +23,7 @@
 		<button type="button" onclick="update_cell()" id="updbtn">Update Cells</button>
 		<button type="button" onclick="start_pos_btn()" id="stps">Set start pos</button>
 		<button type="button" onclick="end_pos_btn()" id="enps">Set end pos</button>
+		<button type="button" onclick="block_btn()" id="blbtn">Place Block</button>
 	</div>
 	<canvas class="canv" id="myCanvas" width="400" height="300" ></canvas>
 </body>
