@@ -160,6 +160,7 @@ function init () {
 	canvas = document.getElementById("myCanvas")
 	context = canvas.getContext("2d")
 	canvas.addEventListener ( 'mousedown', mouse_clicked )
+	resize_window ()
 	draw_grid ()
 }
 
@@ -350,4 +351,22 @@ function end_pos_btn () {
 	setting_end_pos = true
 }
 
+function resize_window ( event ) {
+	canvas.width = window.innerWidth * (90/100)
+	canvas.height = window.innerHeight * (80/100)
+	cell_width = canvas.width / current_width
+	cell_height = canvas.height / current_height
+	pos = new vec2 ( 0, 0 )
+	for ( row in grid ) {
+		for ( col in grid[row] ) {
+			grid[row][col].pos = new vec2 ( pos.x, pos.y )
+			pos.x += cell_width
+		}
+		pos.x = 0
+		pos.y += cell_height
+	}
+	draw_grid ()
+}
+
 window.onload = init
+window.addEventListener ( 'resize', resize_window )
