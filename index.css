@@ -1,0 +1,16 @@
+.myButtons {
+	width: 100%;
+	text-align:center;
+	padding: 0px 0px 10px 0px;
+}
+
+#myCanvas{
+	padding: 0;
+	margin: auto;
+	display: block;
+}
+
+.canv {
+	display: inline;
+	border: 1px solid #000000;
+}

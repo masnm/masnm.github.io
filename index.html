@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<title>Let's Draw</title>
+	<link rel="stylesheet" type="text/css" href="index.css" />
+	<script src="index.js"></script>
+</head>
+
+<body>
+	<div class="myButtons">
+		<select name="algorithm" id="algo">
+			<option value="bfs">BFS</option>
+			<option value="dijkstra">Dijkstra</option>
+		</select>
+		<button id="stsm" type="button" onclick="start_simulation()"> Start simulation </button>
+		<label for="quantity">Rows :</label>
+		<input id="rnm" type="number" id="quantity" name="req_rows" min="1" max="108">
+		<label for="quantity">Columns :</label>
+		<input id="cnm" type="number" id="quantity" name="req_cols" min="1" max="192">
+		<button type="button" onclick="update_cell()" id="updbtn">Update Cells</button>
+		<button type="button" onclick="start_pos_btn()" id="stps">Set start pos</button>
+		<button type="button" onclick="end_pos_btn()" id="enps">Set end pos</button>
+	</div>
+	<canvas class="canv" id="myCanvas" width="400" height="300" ></canvas>
+</body>
+
+</html>
