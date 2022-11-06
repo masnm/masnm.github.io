@@ -55,6 +55,10 @@ class vec2 {
 		this.x = fx
 		this.y = fy
 	}
+	translate ( pos ) {
+		this.x += pos.x
+		this.y += pos.y
+	}
 }
 
 class cell {
@@ -79,15 +83,22 @@ var current_start_pos, current_end_pos
 var setting_start_pos, setting_end_pos
 
 function draw_line ( pos, arrow ) {
-	mid_top = new vec2 ( pos.x + cell_width/2, pos.y )
-	mid_btm = new vec2 ( pos.x + cell_width/2, pos.y + cell_height )
-	lft_leg = new vec2 ( mid_top.x-(cell_width/4), mid_top.y+(cell_height/2) )
-	rht_leg = new vec2 ( mid_top.x+(cell_width/4), mid_top.y+(cell_height/2) )
-	fix_point = new vec2 ( pos.x + cell_width/2, pos.y + cell_height/2 )
+	my_min = Math.min ( cell_width, cell_height )
+	my_min -= (my_min/6)
+	mid_top = new vec2 ( 0, -1 * my_min/2 )
+	mid_btm = new vec2 ( 0, my_min/2 )
+	lft_leg = new vec2 ( mid_top.x - (my_min/4), mid_top.y + (my_min/4) )
+	rht_leg = new vec2 ( mid_top.x + (my_min/4), mid_top.y + (my_min/4) )
+	fix_point = new vec2 ( 0, 0 )
 	mid_top.rotate ( arrow, fix_point )
 	mid_btm.rotate ( arrow, fix_point )
 	lft_leg.rotate ( arrow, fix_point )
 	rht_leg.rotate ( arrow, fix_point )
+	fix_point = new vec2 ( pos.x + cell_width/2, pos.y + cell_height/2 )
+	mid_top.translate ( fix_point )
+	mid_btm.translate ( fix_point )
+	lft_leg.translate ( fix_point )
+	rht_leg.translate ( fix_point )
 	context.moveTo ( parseInt ( mid_btm.x ), parseInt ( mid_btm.y ) )
 	context.lineTo ( parseInt ( mid_top.x ), parseInt ( mid_top.y ) )
 	context.moveTo ( parseInt ( lft_leg.x ), parseInt ( lft_leg.y ) )
