@@ -11,19 +11,19 @@
 
 <body>
 	<div class="myButtons" id="setting_div">
-		<select name="algorithm" id="algo">
+		<select class="btncls" name="algorithm" id="algo">
 			<option value="bfs">BFS</option>
 			<option value="dijkstra">Dijkstra</option>
 		</select>
-		<button id="stsm" type="button" onclick="start_simulation()"> Start simulation </button>
-		<label for="quantity">Rows :</label>
-		<input id="rnm" type="number" id="quantity" name="req_rows" min="1" max="108">
-		<label for="quantity">Columns :</label>
-		<input id="cnm" type="number" id="quantity" name="req_cols" min="1" max="192">
-		<button type="button" onclick="update_cell()" id="updbtn">Update Cells</button>
-		<button type="button" onclick="start_pos_btn()" id="stps">Set start pos</button>
-		<button type="button" onclick="end_pos_btn()" id="enps">Set end pos</button>
-		<button type="button" onclick="block_btn()" id="blbtn">Place Block</button>
+		<button class="btncls" id="stsm" type="button" onclick="start_simulation()"> Start simulation </button>
+		<label class="btncls" for="quantity">Rows :</label>
+		<input class="btncls" id="rnm" type="number" id="quantity" name="req_rows" min="1" max="108">
+		<label class="btncls" for="quantity">Columns :</label>
+		<input class="btncls" id="cnm" type="number" id="quantity" name="req_cols" min="1" max="192">
+		<button class="btncls" type="button" onclick="update_cell()" id="updbtn">Update Cells</button>
+		<button class="btncls" type="button" onclick="start_pos_btn()" id="stps">Set start pos</button>
+		<button class="btncls" type="button" onclick="end_pos_btn()" id="enps">Set end pos</button>
+		<button class="btncls" type="button" onclick="block_btn()" id="blbtn">Place Block</button>
 	</div>
 	<canvas class="canv" id="myCanvas" width="400" height="300" ></canvas>
 </body>

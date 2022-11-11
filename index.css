@@ -1,3 +1,12 @@
+body {
+	background-color: #264653;
+}
+
+.btncls {
+	border: none;
+	background-color: #2A9D8F;
+}
+
 .myButtons {
 	width: 100%;
 	text-align:center;

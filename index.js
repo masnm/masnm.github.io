@@ -347,10 +347,10 @@ function generateDijkstraAnimation () {
 		}
 		grid[cp.x][cp.y].visited = true
 		set_arrow ( cp, current.y )
-		console.log ( cp )
 		if ( cp.x == current_end_pos.x && cp.y == current_end_pos.y ) {
 			pq.clear()
 			enable_everything ()
+			draw_grid ()
 			return
 		}
 		for ( i = -1 ; i < 2 ; ++i ) {

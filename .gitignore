@@ -1,2 +1,5 @@
 # Ctags remover
 tags
+
+# vim swap files
+*.swp
