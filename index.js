@@ -37,6 +37,12 @@ const direction = {
 	none: 1000
 }
 
+const colours = {
+	block_in_path: '#69C46A',
+	block_tested:  '#F4A261',
+	block_default: '#E76F51'
+}
+
 class vec2 {
 	constructor ( x, y ) {
 		this.x = x
@@ -59,6 +65,10 @@ class vec2 {
 		this.x += pos.x
 		this.y += pos.y
 	}
+	sub ( that ) {
+		this.x -= that.x
+		this.y -= that.y
+	}
 }
 
 class vec3 {
@@ -77,6 +87,7 @@ class cell {
 		this.start_pos = new Boolean ( false )
 		this.end_pos = new Boolean ( false )
 		this.visited = new Boolean ( false )
+		this.color = colours.block_default
 	}
 }
 
@@ -133,7 +144,8 @@ function draw_grid () {
 				context.fillRect ( grid[row][col].pos.x + 1, grid[row][col].pos.y + 1,
 					cell_width, cell_height )
 			} else {
-				context.rect ( grid[row][col].pos.x + 1, grid[row][col].pos.y + 1,
+				context.fillStyle = grid[row][col].color
+				context.fillRect ( grid[row][col].pos.x + 1, grid[row][col].pos.y + 1,
 					cell_width, cell_height )
 			}
 			if ( grid[row][col].arrow != direction.none ) {
