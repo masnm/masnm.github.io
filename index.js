@@ -40,7 +40,8 @@ const direction = {
 const colours = {
 	block_in_path: '#69C46A',
 	block_tested:  '#F4A261',
-	block_default: '#E76F51'
+	block_default: '#E76F51',
+	none:          '#000000'
 }
 
 class vec2 {
@@ -65,6 +66,10 @@ class vec2 {
 		this.x += pos.x
 		this.y += pos.y
 	}
+	add ( that ) {
+		this.x += that.x
+		this.y += that.y
+	}
 	sub ( that ) {
 		this.x -= that.x
 		this.y -= that.y
@@ -80,7 +85,7 @@ class vec3 {
 }
 
 class cell {
-	constructor ( pos ) {
+	constructor ( pos, anc ) {
 		this.pos = new vec2 ( pos.x, pos.y )
 		this.block = new Boolean ( false )
 		this.arrow = direction.none
@@ -88,6 +93,7 @@ class cell {
 		this.end_pos = new Boolean ( false )
 		this.visited = new Boolean ( false )
 		this.color = colours.block_default
+		this.ancestor = new vec2 ( anc.x, anc.y )
 	}
 }
 
@@ -101,56 +107,100 @@ var grid
 var current_start_pos, current_end_pos
 var setting_start_pos, setting_end_pos, setting_block
 
-function draw_line ( pos, arrow ) {
+function draw_path ( current ) {
+	if ( current == undefined ) return
+	context.beginPath ()
+	context.strokeStyle = '#FFFFFF'
 	my_min = Math.min ( cell_width, cell_height )
-	my_min -= (my_min/6)
-	mid_top = new vec2 ( 0, -1 * my_min/2 )
-	mid_btm = new vec2 ( 0, my_min/2 )
-	lft_leg = new vec2 ( mid_top.x - (my_min/4), mid_top.y + (my_min/4) )
-	rht_leg = new vec2 ( mid_top.x + (my_min/4), mid_top.y + (my_min/4) )
-	fix_point = new vec2 ( 0, 0 )
-	mid_top.rotate ( arrow, fix_point )
-	mid_btm.rotate ( arrow, fix_point )
-	lft_leg.rotate ( arrow, fix_point )
-	rht_leg.rotate ( arrow, fix_point )
-	fix_point = new vec2 ( pos.x + cell_width/2, pos.y + cell_height/2 )
-	mid_top.translate ( fix_point )
-	mid_btm.translate ( fix_point )
-	lft_leg.translate ( fix_point )
-	rht_leg.translate ( fix_point )
-	context.moveTo ( parseInt ( mid_btm.x ), parseInt ( mid_btm.y ) )
-	context.lineTo ( parseInt ( mid_top.x ), parseInt ( mid_top.y ) )
-	context.moveTo ( parseInt ( lft_leg.x ), parseInt ( lft_leg.y ) )
-	context.lineTo ( parseInt ( mid_top.x ), parseInt ( mid_top.y ) )
-	context.moveTo ( parseInt ( rht_leg.x ), parseInt ( rht_leg.y ) )
-	context.lineTo ( parseInt ( mid_top.x ), parseInt ( mid_top.y ) )
+	context.lineWidth = my_min / 10;
+	while ( true ) {
+		par = grid[current.x][current.y].ancestor
+		context.beginPath ()
+		context.moveTo ( grid[par.x][par.y].pos.x+cell_width/2,
+			grid[par.x][par.y].pos.y+cell_height/2 )
+		context.lineTo ( grid[current.x][current.y].pos.x+cell_width/2,
+			grid[current.x][current.y].pos.y+cell_height/2 )
+		context.stroke ()
+		current = new vec2 ( par.x, par.y )
+		if ( parseInt ( grid[current.x][current.y].ancestor.x ) == parseInt ( current.x )
+			&& parseInt ( grid[current.x][current.y].ancestor.y ) == parseInt ( current.y ) ) {
+			break
+		}
+	}
+	context.strokeStyle = '#000000'
 }
 
-function draw_grid () {
+function draw_grid ( path_srt ) {
 	context.clearRect(0, 0, canvas.width, canvas.height)
+	my_min = Math.min ( cell_width, cell_height )
 	context.beginPath ()
+	context.lineWidth = my_min / 10;
 	for ( row in grid ) {
 		for ( col in grid[row] ) {
+			for ( let i = -1 ; i < 2 ; ++i ) {
+				for ( let j = -1 ; j < 2 ; ++j ) {
+					if ( i == j && i == 0 ) continue
+					next = new vec2 ( parseInt(row) + i, parseInt(col) + j )
+					if ( inside ( next ) ) {
+						context.beginPath ()
+						context.strokeStyle = colours.none
+						//if ( grid[row][col].visited == Boolean ( true )
+						//	&& grid[next.x][next.y].visited == Boolean ( true ) ) {
+						//	context.strokeStyle = '#FFFFFF'
+						//} else context.strokeStyle = colours.none
+						context.moveTo ( grid[row][col].pos.x+cell_width/2,
+							grid[row][col].pos.y+cell_height/2 )
+						context.lineTo ( grid[next.x][next.y].pos.x+cell_width/2,
+							grid[next.x][next.y].pos.y+cell_height/2 )
+						context.stroke ()
+					}
+				}
+			}
+		}
+	}
+
+	if ( path_srt != undefined ) {
+		draw_path ( path_srt )
+	}
+
+//	context.beginPath ()
+//	context.strokeStyle = '#000000'
+//	for ( row in grid ) {
+//		for ( col in grid[row] ) {
+//			if ( grid[row][col].arrow != direction.none ) {
+//				next = new vec2 ( parseInt(row) + i, parseInt(col) + j )
+//				context.moveTo ( grid[row][col].pos.x+cell_width/2,
+//					grid[row][col].pos.y+cell_height/2 )
+//				context.lineTo ( grid[next.x][next.y].pos.x+cell_width/2,
+//					grid[next.x][next.y].pos.y+cell_height/2 )
+//			}
+//		}
+//	}
+//	context.stroke ()
+
+	var up_left, cell_pixs = new vec2 ( cell_width/4, cell_height/4 )
+	context.beginPath ()
+	context.strokeStyle = '#000000'
+	for ( row in grid ) {
+		for ( col in grid[row] ) {
+			up_left = new vec2 ( grid[row][col].pos.x, grid[row][col].pos.y )
+			up_left.add ( cell_pixs )
 			if ( grid[row][col].start_pos == true ) {
 				context.fillStyle = "#FF0000"
-				context.fillRect ( grid[row][col].pos.x + 1, grid[row][col].pos.y + 1,
-					cell_width, cell_height )
+				context.fillRect ( up_left.x, up_left.y, 2*cell_pixs.x, 2*cell_pixs.y )
 			} else if ( grid[row][col].end_pos == true ) {
 				context.fillStyle = "#FFFF00"
-				context.fillRect ( grid[row][col].pos.x + 1, grid[row][col].pos.y + 1,
-					cell_width, cell_height )
+				context.fillRect ( up_left.x, up_left.y, 2*cell_pixs.x, 2*cell_pixs.y )
 			} else if ( grid[row][col].block == true ) {
 				context.fillStyle = "#0000FF"
-				context.fillRect ( grid[row][col].pos.x + 1, grid[row][col].pos.y + 1,
-					cell_width, cell_height )
+				context.fillRect ( up_left.x, up_left.y, 2*cell_pixs.x, 2*cell_pixs.y )
 			} else {
 				context.fillStyle = grid[row][col].color
-				context.fillRect ( grid[row][col].pos.x + 1, grid[row][col].pos.y + 1,
-					cell_width, cell_height )
+				context.fillRect ( up_left.x, up_left.y, 2*cell_pixs.x, 2*cell_pixs.y )
 			}
-			if ( grid[row][col].arrow != direction.none ) {
-				draw_line ( grid[row][col].pos, grid[row][col].arrow )
-			}
+			//if ( grid[row][col].arrow != direction.none ) {
+			//	draw_line ( grid[row][col].pos, grid[row][col].arrow )
+			//}
 		}
 	}
 	context.stroke ()
@@ -211,7 +261,7 @@ function update_cell () {
 	for ( i = 0 ; i < rows ; ++i ) {
 		nxt_row = []
 		for ( j = 0 ; j < cols ; ++j ) {
-			nxt_row[j] = new cell ( pos )
+			nxt_row[j] = new cell ( pos, new vec2 ( i, j ) )
 			pos.x += cell_width
 		}
 		grid[i] = nxt_row
@@ -311,36 +361,41 @@ function generateBFSAnimation () {
 	disable_everything ()
 	let q = new queue ()
 	q.push ( new vec2 ( current_start_pos.x, current_start_pos.y ) )
-	grid[current_start_pos.x][current_start_pos.y].visited = true
+	grid[current_start_pos.x][current_start_pos.y].visited = new Boolean ( true )
 	function bfs_step ( timestamp ) {
 		cp = q.pop()
 		if ( cp.x == current_end_pos.x && cp.y == current_end_pos.y ) {
 			while ( q.size > 0 ) {
 				q.pop ()
 			}
+			draw_grid ( new vec2 ( cp.x, cp.y ) )
 			enable_everything ()
 			return
 		}
 		for ( i = -1 ; i < 2 ; ++i ) {
 			for ( j = -1 ; j < 2 ; ++j ) {
 				next = new vec2(cp.x+i, cp.y+j)
-				if ( inside ( next )===true && can_go ( next ) === true ) {
-					grid[next.x][next.y].visited = true
+				if ( inside ( next ) === true && can_go ( next ) === true ) {
+					grid[next.x][next.y].visited = new Boolean ( true )
+					grid[next.x][next.y].ancestor = new vec2 ( cp.x, cp.y )
+					grid[next.x][next.y].color = colours.block_tested
 					q.push ( new vec2 ( next.x, next.y ) )
 					set_arrow ( next, new vec2 ( i, j ) )
 				}
 			}
 		}
 		if ( q.size > 0 ) {
-			draw_grid ()
+			draw_grid ( new vec2 ( cp.x, cp.y ) )
 			window.requestAnimationFrame ( bfs_step )
 		}
 		if ( q.size < 1 ) {
+			draw_grid ( new vec2 ( cp.x, cp.y ) )
 			enable_everything ()
 		}
 	}
 	return bfs_step
 }
+
 function generateDijkstraAnimation () {
 	disable_everything ()
 	let pq = new PriorityQueue({
@@ -357,12 +412,14 @@ function generateDijkstraAnimation () {
 			window.requestAnimationFrame ( dijkstra_step )
 			return
 		}
-		grid[cp.x][cp.y].visited = true
+		grid[cp.x][cp.y].visited = new Boolean ( true )
+		grid[cp.x][cp.y].color = colours.block_tested
+		grid[cp.x][cp.y].ancestor = new vec2 ( cp.x - current.y.x, cp.y - current.y.y )
 		set_arrow ( cp, current.y )
 		if ( cp.x == current_end_pos.x && cp.y == current_end_pos.y ) {
 			pq.clear()
 			enable_everything ()
-			draw_grid ()
+			draw_grid ( new vec2 ( cp.x, cp.y ) )
 			return
 		}
 		for ( i = -1 ; i < 2 ; ++i ) {
@@ -378,11 +435,11 @@ function generateDijkstraAnimation () {
 			}
 		}
 		if ( pq.length > 0 ) {
-			draw_grid ()
+			draw_grid ( new vec2 ( cp.x, cp.y ) )
 			window.requestAnimationFrame ( dijkstra_step )
 		}
 		if ( pq.length < 1 ) {
-			draw_grid ()
+			draw_grid ( new vec2 ( cp.x, cp.y ) )
 			enable_everything ()
 		}
 	}
@@ -393,7 +450,9 @@ function start_simulation () {
 	for ( row in grid ) {
 		for ( col in grid[row] ) {
 			grid[row][col].arrow = direction.none
-			grid[row][col].visited = false
+			grid[row][col].visited = new Boolean ( false )
+			grid[row][col].color = colours.block_default
+			grid[row][col].ancestor = new vec2 ( parseInt(row), parseInt(col) )
 		}
 	}
 	if ( check_everything () == true ) {
