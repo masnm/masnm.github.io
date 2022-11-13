@@ -38,9 +38,9 @@ const direction = {
 }
 
 const colours = {
-	block_in_path: '#69C46A',
-	block_tested:  '#F4A261',
-	block_default: '#E76F51',
+	block_in_path: '#00FFFF',
+	block_tested:  '#A020F0',
+	block_default: '#505050',
 	none:          '#000000'
 }
 
@@ -106,6 +106,14 @@ var canvas, context
 var grid
 var current_start_pos, current_end_pos
 var setting_start_pos, setting_end_pos, setting_block
+
+function draw_final_path () {
+	context.beginPath ()
+	context.stroke ()
+	while ( true ) {
+		par = grid[current.x][current.y].ancestor
+		// TODO: start form here
+}
 
 function draw_path ( current ) {
 	if ( current == undefined ) return
@@ -369,6 +377,7 @@ function generateBFSAnimation () {
 				q.pop ()
 			}
 			draw_grid ( new vec2 ( cp.x, cp.y ) )
+			draw_final_path ()
 			enable_everything ()
 			return
 		}
@@ -390,6 +399,7 @@ function generateBFSAnimation () {
 		}
 		if ( q.size < 1 ) {
 			draw_grid ( new vec2 ( cp.x, cp.y ) )
+			draw_final_path ()
 			enable_everything ()
 		}
 	}
@@ -420,6 +430,7 @@ function generateDijkstraAnimation () {
 			pq.clear()
 			enable_everything ()
 			draw_grid ( new vec2 ( cp.x, cp.y ) )
+			draw_final_path ()
 			return
 		}
 		for ( i = -1 ; i < 2 ; ++i ) {
@@ -440,6 +451,7 @@ function generateDijkstraAnimation () {
 		}
 		if ( pq.length < 1 ) {
 			draw_grid ( new vec2 ( cp.x, cp.y ) )
+			draw_final_path ()
 			enable_everything ()
 		}
 	}
