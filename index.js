@@ -113,6 +113,7 @@ function draw_final_path () {
 	while ( true ) {
 		par = grid[current.x][current.y].ancestor
 		// TODO: start form here
+	}
 }
 
 function draw_path ( current ) {
@@ -197,10 +198,10 @@ function draw_grid ( path_srt ) {
 				context.fillStyle = "#FF0000"
 				context.fillRect ( up_left.x, up_left.y, 2*cell_pixs.x, 2*cell_pixs.y )
 			} else if ( grid[row][col].end_pos == true ) {
-				context.fillStyle = "#FFFF00"
+				context.fillStyle = "#00FF00"
 				context.fillRect ( up_left.x, up_left.y, 2*cell_pixs.x, 2*cell_pixs.y )
 			} else if ( grid[row][col].block == true ) {
-				context.fillStyle = "#0000FF"
+				context.fillStyle = "#FFA500"
 				context.fillRect ( up_left.x, up_left.y, 2*cell_pixs.x, 2*cell_pixs.y )
 			} else {
 				context.fillStyle = grid[row][col].color
@@ -373,12 +374,9 @@ function generateBFSAnimation () {
 	function bfs_step ( timestamp ) {
 		cp = q.pop()
 		if ( cp.x == current_end_pos.x && cp.y == current_end_pos.y ) {
-			while ( q.size > 0 ) {
-				q.pop ()
-			}
+			enable_everything ()
 			draw_grid ( new vec2 ( cp.x, cp.y ) )
 			draw_final_path ()
-			enable_everything ()
 			return
 		}
 		for ( i = -1 ; i < 2 ; ++i ) {
@@ -398,9 +396,10 @@ function generateBFSAnimation () {
 			window.requestAnimationFrame ( bfs_step )
 		}
 		if ( q.size < 1 ) {
+			enable_everything ()
 			draw_grid ( new vec2 ( cp.x, cp.y ) )
 			draw_final_path ()
-			enable_everything ()
+			return
 		}
 	}
 	return bfs_step
@@ -450,12 +449,17 @@ function generateDijkstraAnimation () {
 			window.requestAnimationFrame ( dijkstra_step )
 		}
 		if ( pq.length < 1 ) {
+			enable_everything ()
 			draw_grid ( new vec2 ( cp.x, cp.y ) )
 			draw_final_path ()
-			enable_everything ()
 		}
 	}
 	return dijkstra_step
+}
+
+function generateAstartAnimation () {
+	disable_everything ()
+	enable_everything ()
 }
 
 function start_simulation () {
@@ -475,7 +479,9 @@ function start_simulation () {
 				break;
 			case "dijkstra":
 				window.requestAnimationFrame ( generateDijkstraAnimation () )
-				console.log ( algo )
+				break;
+			case "astar":
+				window.requestAnimationFrame ( generateAstartAnimation () )
 				break;
 		}
 	}
