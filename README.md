@@ -10,3 +10,5 @@
 - [x] Add Dijkstra
 - [ ] Add A* algorithm
 - [ ] Add Wave Propagration
+- [ ] Stop simulation button
+- [ ] Start Pos end pos can't be in same place
