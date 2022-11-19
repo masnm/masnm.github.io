@@ -1,30 +1,3 @@
-class queue {
-	constructor() {
-		this.elements = {};
-		this.head = 0;
-		this.tail = 0;
-	}
-	push ( element ) {
-		this.elements[this.tail] = element;
-		this.tail++;
-	}
-	pop () {
-		const item = this.elements[this.head];
-		delete this.elements[this.head];
-		this.head++;
-		return item;
-	}
-	front () {
-		return this.elements[this.head];
-	}
-	get size () {
-		return this.tail - this.head;
-	}
-	get empty () {
-		return this.length === 0;
-	}
-}
-
 const direction = {
 	up: 0,
 	up_right: 45,
@@ -42,46 +15,6 @@ const colours = {
 	block_tested:  '#A020F0',
 	block_default: '#505050',
 	none:          '#000000'
-}
-
-class vec2 {
-	constructor ( x, y ) {
-		this.x = x
-		this.y = y
-	}
-	rotate ( angle, fix ) {
-		angle = angle*(2*Math.PI/360.0)
-		let cs = Math.cos ( angle )
-		let sn = Math.sin ( angle )
-		this.x -= fix.x
-		this.y -= fix.y
-		let fx = this.x*cs + this.y*sn*(-1)
-		let fy = this.x*sn + this.y*cs
-		fx += fix.x
-		fy += fix.y
-		this.x = fx
-		this.y = fy
-	}
-	translate ( pos ) {
-		this.x += pos.x
-		this.y += pos.y
-	}
-	add ( that ) {
-		this.x += that.x
-		this.y += that.y
-	}
-	sub ( that ) {
-		this.x -= that.x
-		this.y -= that.y
-	}
-}
-
-class vec3 {
-	constructor ( x, y, z ) {
-		this.x = x
-		this.y = y
-		this.z = z
-	}
 }
 
 class cell {
@@ -106,15 +39,6 @@ var canvas, context
 var grid
 var current_start_pos, current_end_pos
 var setting_start_pos, setting_end_pos, setting_block
-
-function draw_final_path () {
-	context.beginPath ()
-	context.stroke ()
-	while ( true ) {
-		par = grid[current.x][current.y].ancestor
-		// TODO: start form here
-	}
-}
 
 function draw_path ( current ) {
 	if ( current == undefined ) return
@@ -376,8 +300,7 @@ function generateBFSAnimation () {
 		if ( cp.x == current_end_pos.x && cp.y == current_end_pos.y ) {
 			enable_everything ()
 			draw_grid ( new vec2 ( cp.x, cp.y ) )
-			draw_final_path ()
-			return
+			return new Boolean(true)
 		}
 		for ( i = -1 ; i < 2 ; ++i ) {
 			for ( j = -1 ; j < 2 ; ++j ) {
@@ -398,8 +321,7 @@ function generateBFSAnimation () {
 		if ( q.size < 1 ) {
 			enable_everything ()
 			draw_grid ( new vec2 ( cp.x, cp.y ) )
-			draw_final_path ()
-			return
+			return new Boolean(true)
 		}
 	}
 	return bfs_step
@@ -429,7 +351,6 @@ function generateDijkstraAnimation () {
 			pq.clear()
 			enable_everything ()
 			draw_grid ( new vec2 ( cp.x, cp.y ) )
-			draw_final_path ()
 			return
 		}
 		for ( i = -1 ; i < 2 ; ++i ) {
@@ -451,15 +372,69 @@ function generateDijkstraAnimation () {
 		if ( pq.length < 1 ) {
 			enable_everything ()
 			draw_grid ( new vec2 ( cp.x, cp.y ) )
-			draw_final_path ()
 		}
 	}
 	return dijkstra_step
 }
 
+class as_node {
+	constructor ( index, local, global ) {
+		this.index = index
+		this.local = local
+		this.global = global
+	}
+}
+
 function generateAstartAnimation () {
 	disable_everything ()
-	enable_everything ()
+	let needs_testing = []
+	needs_testing.push (
+		new vec4 ( new vec2 ( current_start_pos.x, current_start_pos.y ),
+		parseInt ( 0 ),
+		current_start_pos.distance ( current_end_pos ),
+		new vec2 ( current_start_pos.x, current_start_pos.y ) )
+	)
+	grid[current_start_pos.x][current_start_pos.y].visited = new Boolean(true);
+	function astar_step () {
+		needs_testing.sort ( function ( a, b ) {
+			return a.z - b.z
+		} )
+		let cp = needs_testing.shift ()
+		grid[cp.x.x][cp.x.y].visited = new Boolean(true)
+		grid[cp.x.x][cp.x.y].color = colours.block_tested
+		grid[cp.x.x][cp.x.y].ancestor = new vec2 ( cp.w.x, cp.w.y )
+		if ( cp.x.x == current_end_pos.x && cp.x.y == current_end_pos.y ) {
+			enable_everything ()
+			draw_grid ( new vec2 ( cp.x.x, cp.x.y ) )
+			return new Boolean ( true )
+		}
+		for ( i = -1 ; i < 2 ; ++i ) {
+			for ( j = -1 ; j < 2 ; ++j ) {
+				if ( i == 0 && j == 0 ) continue
+				next = new vec2(cp.x.x+i, cp.x.y+j)
+				if ( inside ( next )===true && can_go ( next ) === true ) {
+					needs_testing.push (
+						new vec4 (
+							new vec2 ( next.x, next.y ),
+							parseInt ( cp.y + 1 ),
+							next.distance ( current_end_pos ),
+							new vec2 ( cp.x.x, cp.x.y )
+						)
+					)
+				}
+			}
+		}
+		if ( needs_testing.length < 1 ) {
+			enable_everything ()
+			draw_grid ( new vec2 ( cp.x.x, cp.x.y ) )
+			return new Boolean ( true )
+		}
+		if ( needs_testing.length > 0 ) {
+			draw_grid ( new vec2 ( cp.x.x, cp.x.y ) )
+			window.requestAnimationFrame ( astar_step )
+		}
+	}
+	return astar_step
 }
 
 function start_simulation () {
