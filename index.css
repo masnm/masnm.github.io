@@ -1,24 +1,30 @@
+/* chnage the colour of the body
+ * basically changing the background colour */
 body {
 	background-color: #264653;
 }
 
+/* changing the button's default styles and colour */
 .btncls {
 	border: none;
 	background-color: #2A9D8F;
 }
 
+/* changing the button's padding and text position */
 .myButtons {
 	width: 100%;
 	text-align:center;
 	padding: 0px 0px 10px 0px;
 }
 
+/* changing the canvas position and display style */
 #myCanvas{
 	padding: 0;
 	margin: auto;
 	display: block;
 }
 
+/* changing the canvas propertyes */
 .canv {
 	display: inline;
 	border: 1px solid #000000;

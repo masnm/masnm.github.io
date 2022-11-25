@@ -3,8 +3,11 @@
 
 <head>
 	<meta charset="utf-8">
+	<!-- changing the default page name -->
 	<title>Visual Path Finders</title>
+	<!-- linking with the css style sheet -->
 	<link rel="stylesheet" type="text/css" href="index.css" />
+	<!-- linking with all the sreipts wich are writeen in JavaScript -->
 	<script src="priority-queue.js"></script>
 	<script src="queue.js"></script>
 	<script src="vectors.js"></script>
@@ -12,12 +15,16 @@
 </head>
 
 <body>
+	<!-- a div to wrap all the buttons and selections and inputs
+		to control them all together -->
 	<div class="myButtons" id="setting_div">
+		<!-- creating a dropdown selection option to select an algorithm -->
 		<select class="btncls" name="algorithm" id="algo">
 			<option value="bfs">BFS</option>
 			<option value="dijkstra">Dijkstra</option>
 			<option value="astar">A*</option>
 		</select>
+		<!-- creating all the buttons and setting their associated JavaScript functions -->
 		<button class="btncls" id="stsm" type="button" onclick="start_simulation()"> Start simulation </button>
 		<label class="btncls" for="quantity">Rows :</label>
 		<input class="btncls" id="rnm" type="number" id="quantity" name="req_rows" min="1" max="108">
@@ -28,6 +35,7 @@
 		<button class="btncls" type="button" onclick="end_pos_btn()" id="enps">Set end pos</button>
 		<button class="btncls" type="button" onclick="block_btn()" id="blbtn">Place Block</button>
 	</div>
+	<!-- creating a canvas to do all the drawing on -->
 	<canvas class="canv" id="myCanvas" width="400" height="300" ></canvas>
 </body>
 
